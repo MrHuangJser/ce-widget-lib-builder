@@ -13,6 +13,9 @@ exports.default = architect_1.createBuilder((options, context) => {
     const project = path_1.resolve(context.workspaceRoot, options.project);
     const projectName = (_a = context.target) === null || _a === void 0 ? void 0 : _a.project;
     return rxjs_1.from(Promise.resolve().then(() => require("ng-packagr"))).pipe(operators_1.map((res) => res.ngPackagr()), operators_1.switchMap((packager) => {
+        if (options.tsConfig) {
+            packager.withTsConfig(options.tsConfig);
+        }
         packager.forProject(project);
         return options.watch ? packager.watch() : packager.buildAsObservable();
     }), operators_1.switchMap(() => rxjs_1.from(discover_packages_1.discoverPackages({ project }))), operators_1.switchMap((pkg) => {

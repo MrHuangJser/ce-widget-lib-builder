@@ -16,6 +16,9 @@ export default createBuilder<NgPackagrBuilderOptions & json.JsonObject>((options
   return from(import("ng-packagr")).pipe(
     map((res) => res.ngPackagr()),
     switchMap((packager) => {
+      if (options.tsConfig) {
+        packager.withTsConfig(options.tsConfig);
+      }
       packager.forProject(project);
       return options.watch ? packager.watch() : packager.buildAsObservable();
     }),
