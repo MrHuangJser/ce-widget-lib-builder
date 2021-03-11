@@ -1,1 +1,1 @@
-# ce widget lib builder
+# ngx-pangu-widgets-builder

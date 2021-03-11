@@ -1,6 +1,6 @@
 {
-  "name": "ce-editor-lib-builder",
-  "version": "1.0.0",
+  "name": "ngx-pangu-widgets-builder",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

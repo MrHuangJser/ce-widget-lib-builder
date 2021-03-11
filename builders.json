@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@angular-devkit/architect/src/builders-schema.json",
   "builders": {
     "widget-builder": {
-      "description": "ce widget lib builder",
+      "description": "ngx-pangu widgets builder",
       "implementation": "./dist",
       "schema": "./node_modules/@angular-devkit/build-angular/src/ng-packagr/schema.json"
     }
