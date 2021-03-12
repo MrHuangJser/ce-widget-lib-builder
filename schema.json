@@ -2,6 +2,10 @@
   "$schema": "http://json-schema.org/schema",
   "type": "object",
   "properties": {
+    "project": {
+      "type": "string",
+      "description": "The file path for the ng-packagr configuration file, relative to the current workspace."
+    },
     "tsConfig": {
       "type": "string",
       "description": "The full path for the TypeScript configuration file, relative to the current workspace."
@@ -10,6 +14,13 @@
       "type": "boolean",
       "description": "Run build when files change.",
       "default": false
+    },
+    "devPort": {
+      "type": "number",
+      "description": "dev server port",
+      "default": 3003
     }
-  }
+  },
+  "additionalProperties": false,
+  "required": ["project"]
 }

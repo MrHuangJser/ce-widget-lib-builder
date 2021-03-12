@@ -4,7 +4,7 @@
     "widget-builder": {
       "description": "ngx-pangu widgets builder",
       "implementation": "./dist",
-      "schema": "./node_modules/@angular-devkit/build-angular/src/ng-packagr/schema.json"
+      "schema": "./schema.json"
     }
   }
 }

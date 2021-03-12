@@ -7,7 +7,9 @@ const discover_packages_1 = require("ng-packagr/lib/ng-package/discover-packages
 const path_1 = require("path");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
+const WebpackDevServer = require("webpack-dev-server");
 const Webpack = require("webpack");
+const ConcatSource = require("webpack-sources").ConcatSource;
 exports.default = architect_1.createBuilder((options, context) => {
     var _a;
     const project = path_1.resolve(context.workspaceRoot, options.project);
@@ -27,18 +29,20 @@ exports.default = architect_1.createBuilder((options, context) => {
                 libraryTarget: "var",
                 filename: `${projectName}.js`,
             },
-            externals: {
-                "@angular/core": "__ng_core__",
-            },
+            externals: { "@angular/core": "__ng_core__" },
             mode: "none",
-            optimization: {
-                minimize: true,
-            },
+            optimization: { minimize: true },
+            plugins: [new LibWrapper({ fileName: `${projectName}.js`, libName: "widgetLibs" })],
         });
-        return compilerAsObservable(compiler, projectName !== null && projectName !== void 0 ? projectName : "widget-libs", pkg.dest, "widgetLibs");
-    }), operators_1.map(() => ({ success: true })));
+        return options.watch
+            ? devCompileAsObservable(compiler, projectName !== null && projectName !== void 0 ? projectName : "", options.devPort)
+            : compileAsObservable(compiler, projectName !== null && projectName !== void 0 ? projectName : "", pkg.dest);
+    }), operators_1.map(() => ({ success: true })), operators_1.catchError((err) => {
+        console.log(err);
+        return rxjs_1.throwError(err);
+    }));
 });
-function compilerAsObservable(compiler, projectName, dest, name) {
+function compileAsObservable(compiler, projectName, dest) {
     return rxjs_1.from(new Promise((resolve, reject) => {
         compiler.run((err) => {
             if (err) {
@@ -66,12 +70,45 @@ function compilerAsObservable(compiler, projectName, dest, name) {
                         catch (error) {
                             reject(error);
                         }
-                        const content = fs_1.readFileSync(path_1.resolve(dest, `${projectName}.js`)).toString();
-                        fs_1.writeFileSync(path_1.resolve(dest, `${projectName}.js`), `(function(){return function(__ng_core__){${content}return ${name}}})();`, { flag: "w" });
                         resolve();
                     }
                 });
             }
         });
     }));
+}
+function devCompileAsObservable(compiler, fileName, port = 3003) {
+    return rxjs_1.from(new Promise((resolve, reject) => {
+        new WebpackDevServer(compiler, {
+            compress: true,
+            publicPath: "/",
+            filename: fileName,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+                "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization",
+            },
+        }).listen(port !== null && port !== void 0 ? port : 3003, "0.0.0.0", (err) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve("");
+            }
+        });
+    }));
+}
+class LibWrapper {
+    constructor(options) {
+        this.options = options;
+    }
+    apply(compiler) {
+        compiler.hooks.compilation.tap("LibWrapper", (compilation) => {
+            compilation.hooks.afterOptimizeAssets.tap("LibWrapper", () => {
+                if (compilation.assets[this.options.fileName]) {
+                    compilation.assets[this.options.fileName] = new ConcatSource("(function(){return function (__ng__core){", compilation.assets[this.options.fileName], `return ${this.options.libName}}})();`);
+                }
+            });
+        });
+    }
 }
